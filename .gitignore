@@ -1,0 +1,7 @@
+.github
+node_modules
+public
+.runner_system_id
+config.toml
+gitlab-runner-windows-amd64.exe
+package-lock.json
