@@ -3,13 +3,13 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: cilacila
 subtitle: ''
-description: ''
-keywords:
+description: 'blog of cilacila'
+keywords: 'Machine Learning, Deep Learning, Multimodal LLM, Computer Vision'
 author: CilaCila
 language: zh-CN
-timezone: ''
+timezone: 'Asia/Shanghai'
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
