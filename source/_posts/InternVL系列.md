@@ -1,5 +1,5 @@
 ---
-title: {{ InternVL系列解读 }}
+title: InternVL系列解读
 tags:
   - InternVL
   - MLLM
