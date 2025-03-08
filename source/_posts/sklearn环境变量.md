@@ -1,5 +1,6 @@
 ---
 title: sklearn设置环境降低cpu负载,提升计算速度
+date: 2024-12-21
 ---
 当使用scikit-learn中的算法的时候，会涉及到并行计算，以加快计算速度；
 scikit-learn的并行有几种实现

@@ -1,5 +1,6 @@
 ---
 title: InternVL系列解读
+date: 2025-02-03
 tags:
   - InternVL
   - MLLM
