@@ -110,6 +110,20 @@ knowledge datasets；模型共计看到了600B的token
 ### 3 SFT
 Adapter + LLM，不仅使用纯文本对话，也使用了多模态对话数据；
 
+# QVQ-72B-Preview
+
+发表于2025.12.25的Blog: [QVQ: To See the World with Wisdom](https://qwenlm.github.io/blog/qvq-72b-preview/)
+
+在Qwen2-VL-72B之上构建的开源多模态**推理**模型，![qvq-72b-preview-compare](<qvq-72b-preview-compare.png>)
+
+## 局限性
+QVQ-72B-Preview 是由 Qwen 团队开发的实验性研究模型，专注于增强视觉推理能力。尽管它的表现超出了预期，但仍有几个限制需要注意：
+
+1. 语言混合与切换：模型可能会意外地混合语言或在语言之间切换，从而影响响应的清晰度。
+2. 递归推理：模型可能会陷入循环逻辑模式，产生冗长的响应而无法得出结论。
+3. 安全和伦理考虑：模型需要增强安全措施，以确保可靠和安全的性能，用户在部署时应保持谨慎。
+4. 性能和基准限制：尽管模型在视觉推理方面有所改善，但它无法完全替代 Qwen2-VL-72B 的能力。此外，在多步骤视觉推理过程中，模型可能会逐渐失去对图像内容的关注，导致幻觉。
+
 # QwenVL-2.5
 
 Paper: [Qwen2.5-VL Technical Report](https://arxiv.org/abs/2502.13923) ， 发表于2025.02
@@ -169,3 +183,21 @@ pure text, sourced from general VQA, Rejection Sampling, and specialized dataset
 and OCR, Grounding, Video, and Agent-related tasks. 
 
 DPO只使用纯文本数据和图文数据。
+
+# QwenVL-2.5-32B
+
+发布于2025.03.24的**Blog**：[Qwen2.5-VL-32B: Smarter and Lighter](https://qwenlm.github.io/blog/qwen2.5-vl-32b/)，具体模型是QwenVL-2.5-32B-Instruct
+
+相比于QwenVL-2.5-VL系列，该模型具有以下特点：
+- **回复更符合人类主观偏好**：调整了输出风格，使回答更加详细、格式更规范，并更符合人类偏好。
+- **数学推理能力**：复杂数学问题求解的准确性显著提升。
+- **图像细粒度理解与推理**：在图像解析、内容识别以及视觉逻辑推导等任务中表现出更强的准确性和细粒度分析能力。
+
+# QVQ-Max: Think with Evidence
+发布于2025.03.28的blog: <https://qwenlm.github.io/blog/qvq-max-preview/>
+是QVQ-72B-Preview的升级版本，是视觉推理的第一个版本
+
+## 核心能力
+1. 细致观察：抓住每一个细节
+2. 深入推理：不只是“看到”，还要“想到”
+3. 灵活应用：从解答问题到创作
