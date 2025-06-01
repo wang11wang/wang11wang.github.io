@@ -2,7 +2,7 @@
 title: QwenVL系列阅读
 date: 2025-03-01
 tags: QwenVL, MLLM
-math: true
+mathjax: true
 ---
 QwenVL系列是阿里推出的一系列多模态大语言模型，在多个领域表现优秀
 # QwenVL

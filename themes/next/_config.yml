@@ -502,7 +502,7 @@ math:
   mathjax:
     enable: true
     # See: https://mhchem.github.io/MathJax-mhchem/
-    mhchem: false
+    mhchem: true
 
   # hexo-renderer-markdown-it-plus (or hexo-renderer-markdown-it with markdown-it-katex plugin) required for full Katex support.
   katex:

@@ -2,7 +2,7 @@
 title: LLaVA Series解读
 date: 2025-02-22
 tags: LLaVA MLLM
-math: true
+mathjax: true
 ---
 ![LLaVA发展图](Llava系列.png)
 

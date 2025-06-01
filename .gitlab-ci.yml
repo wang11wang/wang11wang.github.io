@@ -1,9 +1,12 @@
 image: node:18.20.4
+
 cache:
   paths:
     - node_modules/
 
 before_script:
+  - wget https://github.com/jgm/pandoc/releases/download/3.6.4/pandoc-3.6.4-1-amd64.deb
+  - dpkg -i ./pandoc-3.6.4-1-amd64.deb
   - npm install hexo-cli -g
   - npm install
 
