@@ -6,3 +6,4 @@ config.toml
 gitlab-runner-windows-amd64.exe
 package-lock.json
 .crossnote
+db.json
