@@ -21,7 +21,7 @@ Blog: <https://qwenlm.github.io/blog/qwen-vl/>
 
 **QwenVL-PLUS和QwenVL-MAX**都是闭源的，提供API调用
 
-![QwenVL-arch](QwenVL-arch.png)
+<img src="QwenVL系列/QwenVL-arch.png" alt="QwenVL-arch"/>
 
 - Vision Encoder: openAI-ViT/bigG(14px)
 - Position-aware Vision Language Adapter: 类似BLIP2的Q-Former，使用256个learnable Query Embeddings作为CrossAttn的query，ViT的图像特征作为key，2D-绝对位置编码被整合进query-key中。
@@ -77,7 +77,8 @@ Blog: <https://qwenlm.github.io/zh/blog/qwen2-vl>
 - **多语言支持**，除中文和英文之外，还支持大多数欧洲语言、日语、韩语、阿拉伯语、越南语等。
 
 ## 模型结构
-![qwen2vl-arch](qwen2vl-arch.png)
+
+<img src="QwenVL系列/qwen2vl-arch.png" alt="qwen2vl-arch">
 
 - Vision Encoder: 相比QwenVL更小了，在2B、7B和72B上都使用600M规模的ViT，使用[DFN](https://arxiv.org/abs/2309.17425)的ViT进行初始化，但是将DFN中的绝对位置编码替换成了RoPE。
 - LLM: Qwen2系列
@@ -89,7 +90,7 @@ Blog: <https://qwenlm.github.io/zh/blog/qwen2-vl>
 
 - 多模态旋转位置嵌入（M-RoPE: MultiModal Rotory Position Embedding）
     
-    ![qwen2vl-mrope](qwen2vl-mrope.png)
+    <img src="QwenVL系列/qwen2vl-mrope.png" alt="qwen2vl-mrope" />
 
     传统的旋转位置嵌入只能捕捉一维序列的位置信息，而 M-ROPE 通过将原始旋转嵌入分解为代表时间、高度和宽度的三个部分，使得大规模语言模型能够同时捕捉和整合一维文本序列、二维视觉图像以及三维视频的位置信息。
 
@@ -115,7 +116,7 @@ Adapter + LLM，不仅使用纯文本对话，也使用了多模态对话数据�
 
 发表于2025.12.25的Blog: [QVQ: To See the World with Wisdom](https://qwenlm.github.io/blog/qvq-72b-preview/)
 
-在Qwen2-VL-72B之上构建的开源多模态**推理**模型，![qvq-72b-preview-compare](<qvq-72b-preview-compare.png>)
+在Qwen2-VL-72B之上构建的开源多模态**推理**模型， <img src="QwenVL系列/qvq-72b-preview-compare.png" alt="qvq-72b-preview-compare" />
 
 ## 局限性
 QVQ-72B-Preview 是由 Qwen 团队开发的实验性研究模型，专注于增强视觉推理能力。尽管它的表现超出了预期，但仍有几个限制需要注意：
@@ -146,7 +147,7 @@ Qwen2.5-VL 的主要特点如下所示：
 
 - 结构化输出：对于发票、表单、表格等数据，Qwen2.5-VL 支持其内容的结构化输出，惠及金融、商业等领域的应用。
 
-![qwenvl2.5-vl-arch](qwenvl2.5-vl-arch.png)
+<img src="QwenVL系列/qwenvl2.5-vl-arch.png" alt="qwenvl2.5-vl-arch" />
 
 ## 模型结构
 - LLM：使用Qwen2.5系列，为了更多满足多模态理解的要求，将1D RoPE（Rotary Position Embedding）修改为与绝对时间对齐的多模态RoPE。
@@ -174,7 +175,8 @@ Qwen2.5-VL 的主要特点如下所示：
 总体分为预训练和后训练2大阶段，其中Pre-Training又分为3个阶段：Visual Pre-Training， Multimodal Pre-Training和Long-Context Pre-Training；Post-Traning分为2个阶段：SFT和DPO
 
 ### 1. Pre-Traning
-![qwenvl2.5-arch-pretraining](qwenvl2.5-arch-pretraining.png)
+
+<img src="QwenVL系列/qwenvl2.5-arch-pretraining.png" alt="qwenvl2.5-arch-pretraining" />
 根据输入到LLM的序列的长度，动态打包数据样本；在第1和第2阶段，数据被均匀的packed到8192的长度，但是在第3阶段，序列长度增加到32768。
 ### 2. Post-Training
 在SFT和DPO过程中，ViT都是frozen的。
