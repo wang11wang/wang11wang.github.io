@@ -5,7 +5,9 @@ tags: QwenVL, MLLM
 mathjax: true
 ---
 QwenVL系列是阿里推出的一系列多模态大语言模型，在多个领域表现优秀
+
 # QwenVL
+
 Paper: [Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond](https://arxiv.org/abs/2308.12966)，发表于23.08
 
 Code: <https://github.com/QwenLM/Qwen-VL>
@@ -29,12 +31,14 @@ Blog: <https://qwenlm.github.io/blog/qwen-vl/>
 
 ## Train
 分为**预训练、多任务预训练和SFT**共3个阶段进行训练
+
 ### 1. Pre-training
 使用了1.4B的数据（77.3的英文文本，22.7%的中文文本）
 
 图像分辨率 256 x 256，特征长度256
 
 冻结LLM，只训练ViT和Adapter，使用Cross Entropy Loss
+
 ### 2. Multi-task Pre-training
 高质量细粒度的更大分辨率（448*448）和interleaved image-txt data 视觉语言标注数据
 
@@ -103,13 +107,16 @@ Blog: <https://qwenlm.github.io/zh/blog/qwen2-vl>
 ## 训练
 
 和qwenvl 相同的3阶段的训练
-### 1 预训练
+
+### 1. 预训练
 ViT + Adapter，使用image-text pairs, optical character recognition
 (OCR) data, interleaved image-text articles, visual question answering datasets, video dialogues, and image
 knowledge datasets；模型共计看到了600B的token
-### 2 多任务预训练
+
+### 2. 多任务预训练
 全部参数，使用额外的800B token的图像相关的数据
-### 3 SFT
+
+### 3. SFT
 Adapter + LLM，不仅使用纯文本对话，也使用了多模态对话数据；
 
 # QVQ-72B-Preview

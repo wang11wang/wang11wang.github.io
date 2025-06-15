@@ -7,17 +7,19 @@ tags:
 mathjax: true
 ---
 InternVL系列教程：<https://internvl.readthedocs.io/en/latest/index.html>
+
 # InternVL
 发表于2023.12
 
 Paper: [InternVL: Scaling up Vision Foundation Models and Aligning for Generic Visual-Linguistic Tasks](https://arxiv.org/pdf/2312.14238)
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.0/classification.html>
-![internvl-arch](internvl-arch.png)
+<img src="InternVL系列/internvl-arch.png" alt="internvl-arch" />
 
 
 
 ## 训练策略：
+
 ### Stage-1: Vision-Language Contrastive Training
 Visual Encoder: InterViT-6B，随机初始化权重
 
@@ -28,6 +30,7 @@ LLM: 多语言的LLaMA-7B（直接使用训练好的权重）
 数据：web scale, noisy image-text pairs，将6.03B图文对清洗之后还剩下4.98B
 
 Visual Encoder和LLM的权重都更新
+
 ### Stage-2: Vision-Language Generative Training
 QLLaMA：使用Stage-1中的LLaMA-7B的权重
 
@@ -36,6 +39,7 @@ QLLaMA：使用Stage-1中的LLaMA-7B的权重
 数据：将上述4.98B数据进一步清洗，得到1.03B数据
 
 损失：类似BLIP2的image-text contrastive loss(ITC)，image-text match loss(ITM)和image-grounded text generation loss(ITG)
+
 ### Stage-3: SFT
 数据：大约4M的高质量的指令数据
 
@@ -49,7 +53,7 @@ QLLaMA：使用Stage-1中的LLaMA-7B的权重
 发表于2024.01.24 Blog: [InternVL 1.1: Enhance Chinese and OCR Capabilities](https://internvl.github.io/blog/2024-01-24-InternVL-1.1)
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.1/introduction.html>
-![internvl-1-1](internvl-1-1-arch.png)
+<img src="InternVL系列/internvl-1-1-arch.png" alt="internvl-1-1-arch" />
 
 发布了InternVL-Chat-V1-1 和 InternViT-6B-448px-V1-0 2个模型
 
@@ -60,10 +64,13 @@ Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.1/introduction.ht
 增强OCR能力和中文能力
 
 ## 训练
+
 ### Stage-1: Pretraining 
 只更新ViT和MLP的权重，ViT使用InternVL-1.0的中的InternViT-6B（224 x 224)的权重初始化
+
 ### Stage-2: SFT
 只更新MLP和LLM的权重
+
 # InternVL-1.2
 发表于2024.02.12，比LLaVA-NeXT稍晚一点，受到LLaVA-NeXT-34B的启发，使用了更大的LLM: [Nous-Hermes-2-Yi-34B](https://huggingface.co/NousResearch/Nous-Hermes-2-Yi-34B)
 
@@ -71,11 +78,13 @@ Blog: [InternVL 1.2: Scaling up LLM to 34B](https://internvl.github.io/blog/2024
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.2/introduction.html>
 
-![internVL-1-2-arch](internVL-1-2-arch.png)
+<img src="InternVL系列/internVL-1-2-arch.png" alt="internVL-1-2-arch" />
 
 ## 训练
+
 ### Stage-1: Pretraining
 和InternVL-1.1相同，只更新ViT和MLP的权重
+
 ### Stage-2: SFT
 此处和InterVL-1.1不同，全模型训练（40B）
 
@@ -121,6 +130,7 @@ InternVL-Chat-V1-2使用的是1.2M的SFT数据，InternVL-Chat-V1-2-Plus使用�
 Paper: [How Far Are We to GPT-4V? Closing the Gap to Commercial Multimodal Models with Open-Source Suites](https://arxiv.org/abs/2404.16821)
 
 Blog: [InternVL 1.5: How Far Are We to GPT-4V? Closing the Gap to Commercial Multimodal Models with Open-Source Suites](https://internvl.github.io/blog/2024-04-30-InternVL-1.5/)
+
 ## Model Card
 <table>
     <thead>
@@ -156,7 +166,7 @@ Blog: [InternVL 1.5: How Far Are We to GPT-4V? Closing the Gap to Commercial Mul
 </tbody>
 </table>
 
-![internVL-1.5-arch](internVL-1.5-arch.png)
+<img src="InternVL系列/internVL-1.5-arch.png" alt="internVL-1.5-arch" />
 
 ## 动态高分辨率
 按照aspect ratio将原始图分成多个448 x 448的patches + 原始图的缩放到448 x 448
@@ -168,6 +178,7 @@ Blog: [InternVL 1.5: How Far Are We to GPT-4V? Closing the Gap to Commercial Mul
 ，即448 x 448的patch/image使用256个token表示
 
 ## 训练
+
 ### InternVL-Chat-V1-5 (26B)
 LLM: InternLM2-20B
 
@@ -221,11 +232,15 @@ Stage-2: 同InternVL-Chat-V1-5，使用5M高质量的双语数据，对ViT + MLP
 </table>
 
 ## 模型结构
+
 结构和InternVL-1.5相同
+
 ### Visual Encoder
 将InternViT-6B-448px-V1-5蒸馏到300M，即InternViT-300M-448px
+
 ### LLM
 InternLM2-Chat-1.8B 或者 Phi-3-mini-128k-instruct (3.8B)
+
 ### 训练方法
 和InternVL-1.5类似，使用同样的数据，2B的模型和26B的模型训练方式一样，4B的模型和40B的训练方法一样
 
@@ -237,8 +252,10 @@ InternLM2-Chat-1.8B 或者 Phi-3-mini-128k-instruct (3.8B)
 支持多模态输入（图像，文本，视频，医疗数据），多任务输出（图，bbox，mask）
 
 ## 训练方法
+
 ### Stage-1
 在InternVL-1.5的数据上做了扩充，只微调MLP
+
 ### Stage-2
 InternVL-1.5的5M高质量的双语数据
  ViT + MLP + LLM
@@ -267,14 +284,16 @@ Blog: [Mini-InternVL 2.0: A Flexible-Transfer Pocket Multimodal Model with 5% Pa
 
 发布了1B, 2B和4B的模型，其中<font color=red>4B的模型使用5%的参数实现了InternVL2-Llama3-76B 90%的性能</font>
 
-![mini-internvl-2.0-arch](mini-internvl-2.0-arch.png)
+<img src="InternVL系列/mini-internvl-2.0-arch.png" alt="mini-internvl-2.0-arch" />
 使用CLIP-ViT-L/336px(300M)初始化InternViT-300M，然后使用InternViT-6B将知识蒸馏到InternViT-300M
 
 InternViT-300M输入是448px，采用动态高分辨率，每个448 x 448的patch产生1024个token，经过Pixel Unshuffle降低到256个Token
 
 ## 训练
+
 ### Stage-1: 
 在InternVL-1.5的扩展数据上进行训练，对于1B和2B模型训练ViT + MLP，对于4B的模型，只训练MLP
+
 ### Stage-2:
 使用InterVL-1.5的5M高质量的双语数据，对整个模型的参数都做更新（即ViT + MLP + LLM）
 
@@ -288,10 +307,10 @@ Blog: [InternVL2.5: Expanding Performance Boundaries of Open-Source Multimodal M
 模型结构和InternVL-1.5，InternVL-2.0都一样
 
 不同类型的数据，使用不同的训练数据格式
-![internvl-2.5-data-format](internvl-2.5-data-format.png)
+<img src="InternVL系列/internvl-2.5-data-format.png" alt="internvl-2.5-data-format" />
 
 ## 训练方法
-![internvl-2.5-train](internvl-2.5-train.png)
+<img src="InternVL系列/internvl-2.5-train.png" alt="internvl-2.5-train" />
 每个模型都分为3个阶段的训练，3个阶段都是使用的**NTP Loss**
 ### stage-1: MLP WarmUp
 只更新MLP的参数
@@ -308,11 +327,13 @@ Blog: [InternVL2.5: Expanding Performance Boundaries of Open-Source Multimodal M
 然后进行正常的Stage-2的全参微调
 
 ## 训练增强
+
 ### 随机JPEG压缩
 对图像进行75～100质量的JPEG压缩
+
 ### Loss Reweighting
 常用的NTP LOSS重采样有**Token平均**和**样本平均**
-![internvl-2.5-loss-reweighting](internvl-2.5-loss-reweighting.png)
+<img src="InternVL系列/internvl-2.5-loss-reweighting.png" alt="internvl-2.5-loss-reweighting" />
 
 token平均： $\frac{1}{x^0}$恒等于1，即$w_i$恒等于1，那么每个token对NTP Loss的贡献都是一样的，会导致梯度偏差到更长的token生成上
 

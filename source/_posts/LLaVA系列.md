@@ -4,7 +4,7 @@ date: 2025-02-22
 tags: LLaVA MLLM
 mathjax: true
 ---
-![LLaVA发展图](Llava系列.png)
+<img src="LLaVA系列/Llava系列.png" alt="LLaVA发展图" />
 
 # LLAVA
 Paper: [Visual Instruction Tuning](https://arxiv.org/abs/2304.08485)
@@ -12,8 +12,9 @@ Paper: [Visual Instruction Tuning](https://arxiv.org/abs/2304.08485)
 Code: <https://llava-vl.github.io/>
 
 2023.04.17发布，使用1个Linear Matrix连接Vision Encoder和LLM
+
 ## 整体结构
-![LLaVA架构](LLaVA_arch.png)
+<img src="LLaVA系列/LLaVA_arch.png" alt="LLaVA架构" />
 
 - Vision Encoder: VIT-L/14
 - LLM: Vicuna
@@ -23,18 +24,20 @@ $$H_v = W \cdot Z_v , 其中Z_v = g(X_v)$$
 
 ### 训练损失
 使用LLM的自回归损失，即
-![LLaVA-formula-3](LLaVa-formula-3.png)
+<img src="LLaVA系列/LLaVa-formula-3.png" alt="LLaVA-formula-3" />
 > 注意，损失并不是在所有token上计算的，只在下图中的绿色部分计算
-![LLaVA-table-2](LLaVA-table-2.png)
+<img src="LLaVA系列/LLaVA-table-2.png" alt="LLaVA-table-2" />
 
 ### two stage training
+
 #### Stage 1: Feature Alignment
 只训练Linear Matrix
+
 #### Stage 2: 
 冻结Vision Encoder，训练Limear Matrix和LLM
 
 ### 数据
-![LLaVA-数据生成](LLaVA-数据生成.png)
+<img src="LLaVA系列/LLaVA-数据生成.png" alt="LLaVA-数据生成" />
 使用Context Type1和Context Type2对GPT-4进行prompt，然后让GPT-4输出Response的3种回答，作为训练数据；
 > 图片并没有作为prompt输入到GPT-4中，放在这里只是方便距离而已；
 
@@ -44,11 +47,12 @@ Paper: [LLaVA-Med: Training a Large Language-and-Vision Assistant for Biomedicin
 Code: <https://github.com/microsoft/LLaVA-Med?tab=readme-ov-file#archive>
 
 2023.06.01发布，达到GPT-4级别的生物医学领域的MLLM
-![LLaVA-Med-arch](LLaVA-Med-arch.png)
+<img src="LLaVA系列/LLaVA-Med-arch.png" alt="LLaVA-Med-arch" />
 使用原始的LLaVA初始化模型，然后首先做**医学概念对齐**，然后做**医学指令微调**
 
 - 医学概念对齐：冻结Vision Encoder和LLM，只微调Linear Matrix
 - 医学指令微调：冻结Vision Encoder，微调Linear Matrix和LLM
+
 # LLaVA-RLHF
 Paper: [Aligning Large Multimodal Models with Factually Augmented RLHF](https://arxiv.org/abs/2309.14525)
 
@@ -60,9 +64,10 @@ RLHF: 即 Reinforcement Learning from Human Feedback
 
 PPO: 即Proximal Policy Optimization，近端策略优化
 
-![LLaVA-RLHF](LLaVA-RLHF.png)
+<img src="LLaVA系列/LLaVA-RLHF.png" alt="LLaVA-RLHF" />
 
 ## 3个训练阶段
+
 ### Stage-1: SFT
 - 在CC3M的子集上，使用Linear Matrix做特征对齐
 - 在Attention和FFN上做Lora(r=64), 使用的数据是 Visual Chat and HQ Multimodal Instruction:， 具体是 90k LLaVA-Instruct task, 83k VQA-v2 and 16k A-OKVQA multi-round QA task, and 23k Flickr30k Spotting Caption task，得到 LLaVA-SFT<sup>+</sup>
@@ -70,8 +75,10 @@ PPO: 即Proximal Policy Optimization，近端策略优化
 
     - LLaVA-SFT<sup>+</sup>-7b: Vicuna-V1.5-7b LLM and ViT-L/14 (224 x 224)
     - LLaVA-SFT<sup>+</sup>-13b: Vicuna-V1.5-13b LLM and ViT-L/14 (336 x 336)
+
 ### Stage-2:  Human Preference Collection & Preference Modeling
 We collect 10k human preferences where human annotators are asked to compare two responses and pinpoint the more hallucinated one.
+
 ### Stage-3: 事实增强的RLHF
 
 #### RLHF中的4个模型
@@ -100,7 +107,7 @@ Paper: [Improved Baselines with Visual Instruction Tuning](https://arxiv.org/abs
 当需要简介的回答的时候，可以在prompt的末尾添加：Answer the question using a single word or phrase
 
 ## LLaVA-HD
-![LLaVA-1.5-HD](LLaVA-1.5-HD.png)
+<img src="LLaVA系列/LLaVA-1.5-HD.png" alt="LLaVA-1.5-HD" />
 AnyRes策略：使用CLIP VIT-L/14(224px)作为Visual Encoder，将图像split成$224^2$的grids，支持6个grids（1x1, 1x2, 1x3, 1x4, 1x5, 1x6,
 2x2, 2x3, 以及他们的转置)；对这些patches分别独立的提取特征，然后merge成1个大的feature map，再**后处理**成flatten features；此外还和原始图像缩放到224x224讲过Visual Encoder得到的特征concat起来作为LLM的输入；
 
@@ -139,11 +146,14 @@ LLaVA-Plus Capabilities enabled by **P**lug and **L**earning to **U**se **S**kil
 Zero-Shot Chinese Capaticy：**涌现**能力，只在英文多模态数据上训练，在中文多模态场景表现也不错
 
 ## 详细的技术提升
+
 ### 1. 动态高分辨率
 详见LLaVA-1.5-HD
+
 ### 2. 数据混合
 - 高质量的用户交互数据：首先，task instructions的丰富度，其次：数据的准确性；使用了2个数据源：（1）Existing GPT-V data. LAION-GPT-V and ShareGPT-4V，（2）15k的来自LLaVA demo的覆盖各个场景的visual instruction tuning数据
 - 多模态文档/表格数据：（1）去掉了TextCaps数据因为TextCaps使用了TextVQA的训练图像；将TextCaps替换成DocVQA和SynDog-EN （2）受到Qwen-VL-7B-Chat的启发，为了更多的图标理解，增加了ChartQA、 DVQA和AI2D
+
 ### 3. Scaling LLM Backbone
 除了Vicuna 1.5(7B和13B)之外，也使用 [Mistral-7B](https://mistral.ai/news/announcing-mistral-7b) 和 [Nous-Hermes-2-Yi-34B](https://huggingface.co/NousResearch/Nous-Hermes-2-Yi-34B)
 
@@ -230,8 +240,9 @@ Model Card:
 4. 结合SGLang的高效部署和推理
 
 ## 技术亮点
+
 ### 1. AnyRes: From Multi-patch to Multi-frame
-![LLaVA-NeXT-AnyRes](LLaVA-NeXT-AnyRes.png)
+<img src="LLaVA系列/LLaVA-NeXT-AnyRes.png" alt="LLaVA-NeXT-AnyRes" />
 多个patch可以很容易的改成多帧，假设每帧可以转换成24x24个token，对于max_token_length限制是4096的LLM，那么就需要确保24x24xN + the number of text tokens < 4096。也可以使用2x2的pooling将24x24的feature转变成12x12的，经过实验发现12x12的token表现更好；最多使用16帧。
 ### 2. Length generalization: From multi-frame to long-video.
 在旋转位置编码（RoPE: Rotary Position Embeddings)中使用**linear scaling**，可以在推理的时使用比训练时更长的token。
@@ -242,8 +253,11 @@ Model Card:
 直接使用 [LLaVA-Hound](https://arxiv.org/pdf/2404.01258)中的方法，进行DPO，可以得到更强的模型
 
 ## 经验
+
 ### 1. 如何表示视频
+
 使用12x12个token表示视频帧最好
+
 ### 2. how to fine-tune on videos?
 使用image和video混合的数据训练，每个batch都有image和video
 
@@ -259,6 +273,7 @@ Model Card:
 ](https://llava-vl.github.io/blog/2024-05-25-llava-next-ablations/)
 
 ## Insights on Architectures
+
 ### Language Models
 1. 更大的LLM，会使MLLM能力更强
 2. 更大的LLM，收敛更快且loss更小
@@ -269,20 +284,23 @@ Model Card:
     使用更小的学习率可以缓解该问题，如(LLM, Vision)的学习率设置为：(2e-5, 2e-6), (2e-5, 1e-6), (1e-5, 2e-6), (1e-5, 1e-6), (5e-6, 1e-6), 和 (5e-6, 5e-7)
 
     Vision Encoder的lr应当比LLM的小5x或者10x
+
 ### Vision Encoders
 分辨率、token数目和预训练的数据比模型大小更重要，如基于代价和性能的平衡，使用了WEBLI-10B数据（384x384)，输出729个token的SO400M表现出了最好的性能
+
 ## Visual Representations
 Higher-AnyRes
-![llava-next-ablations-higher-any-res](llava-next-ablations-higher-any-res.png)
+<img src="LLaVA系列/llava-next-ablations-higher-any-res.png" alt="llava-next-ablations-higher-any-res" />
 阈值化的双线性插值【Thresholded Bilinear Interpolation】，对于一个grids（宽为a，高为b）的AnyRes，假设每个grid的token数时T，那么最多能够表示的Token个数是 $L = (a \times b + 1) \times T$；设置一个阈值$\tau$，使用双线性插值来减少每个grid的token数目
 $$ T_{new}=\left\{
 \begin{array}{rcl}
 \tau/(a\times b+1)       &      & if \quad{L>\tau}\\
 T     &      & if \quad {L\leq \tau}\\
 \end{array} \right. $$
+
 ## Traning Strategies
 在原本的2阶段训练的图文对齐和视觉指令微调中加入**Stage-1.5: 进行高质量的知识学习**：训练方法和Stage-2类似，数据质量要高（一般可以使用ReCaped Detailed Description Data，文档/OCR Data）
-![llava-next-ablations-training-strategies](llava-next-ablations-training-strategies.png)
+<img src="LLaVA系列/llava-next-ablations-training-strategies.png" alt="llava-next-ablations-training-strategies" />
 
 # LLaVA-NeXT-Interleave
 发表于2024.06.16的Blog: [LLaVA-NeXT: Tackling Multi-image, Video, and 3D in Large Multimodal Models](https://llava-vl.github.io/blog/2024-06-16-llava-next-interleave/)
@@ -302,8 +320,10 @@ T     &      & if \quad {L\leq \tau}\\
     为图像生成任务提供图像编辑提prompt
 
     总结多个文档的信息，并提供比较
+
 ## Interleave Visual Instruction Tuning
 构建了M4-Instruct作为训练数据，构建了LLaVA-Interleave Bench
+
 ## 训练技术
 模型结构：LLaVA-NeXT-Interleave (0.5/7/14B) adopts **Qwen 1.5-0.5B, 7B and -14B** as base LLMs, **SigLIP-400M** with **384x384** resolutions as the vision encoder, and a **two-layer MLP** as the projection layer.
 
@@ -321,7 +341,7 @@ T     &      & if \quad {L\leq \tau}\\
 
 Blog: [LLaVA-OneVision Easy Visual Task Transfer](https://llava-vl.github.io/blog/2024-08-05-llava-onevision)
 
-![llava-onevision-roadmap](llava-onevision-roadmap.png)
+<img src="LLaVA系列/llava-onevision-roadmap.png" alt="llava-onevision-roadmap" />
 
 综合了上述4个blog的内容，Vision Encoder使用SigLIP, LLM使用Qwen-2(0.5B, 7B, 72B)
 

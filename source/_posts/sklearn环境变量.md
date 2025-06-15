@@ -18,6 +18,7 @@ from joblib import parallel_backend
 with parallel_backend('threading', n_jobs=2):
     # Your scikit-learn code here
 ```
+
 ## OpenMP
 OpenMP会默认使用尽可能多的线程进行计算，通常和CPU的逻辑核数相等的核数进行计算，可以通过<font color="red">OMP_NUM_THREADS</font>环境变量进行控制,如
 ``` bash
@@ -28,6 +29,7 @@ $ OMP_NUM_THREADS=4 python my_script.py
 $ export OMP_NUM_THREADS=4
 python my_script.py
 ```
+
 ## 来自numpy,scipy的并行
 scikit-learn依赖了很多numpy和scipy的计算，numpy和scipy内部使用线性代数库(BLAS & LAPACK)进行并行计算，比如： MKL, OpenBLAS or BLIS
 - MKL_NUM_THREADS 设置MKL的线程个数
@@ -38,6 +40,7 @@ scikit-learn依赖了很多numpy和scipy的计算，numpy和scipy内部使用线
 ``` bash
 $ OMP_NUM_THREADS=2 python -m threadpoolctl -i numpy scipy
 ```
+
 ## spawning过多的线程
 一般情况下，使用和cpu核心数相当的线程数是合适的，使用更多的核心数不会提升性能，性能反而还会降低
 
