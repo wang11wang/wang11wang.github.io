@@ -6,16 +6,18 @@ mathjax: true
 ---
 
 <img src="RLHF-GRPO/ppo-and-grpo.png" alt="ppo-and-grpo" />
-GRPO是在 <font color='blue'>DeepSeekMath: https://arxiv.org/abs/2402.03300</font> 论文中提出的
+
+GRPO是在 [DeepSeekMath](https://arxiv.org/abs/2402.03300) 论文中提出的
 
 ---
 
-> https://zhuanlan.zhihu.com/p/3333839684
+> <https://zhuanlan.zhihu.com/p/3333839684>
 
 # PPO
 <font color='blue'> GRPO【组相对策略优化, Group Relative Policy Optimization】</font>是从 <font color='blue'>PPO【近端策略优化，Proximal Policy Optimization】</font>优化而来的，因此需要先学习GRPO。
 
 PPO是actor-critic的RL算法，在LLM中，常常优化以下的代理目标：
+
 > 该公式来自DeepSeekMath的公式（1）
 
 $$
@@ -24,7 +26,8 @@ $$
 \end{equation}
 $$
 
-<font color='blue'>公式1</font>中的 $\pi \theta$，是可以单独拿出来的，即
+<font color='blue'>公式1</font>中的 $\frac{\pi_{\theta}}{\pi_{\theta old}}$ 项重复出现，可以写成
+
 $$
 \begin{equation}
 \mathcal{h}(o_{t}) = \frac{\pi _{\theta} (o_{t} | q, o_{<t})}{\pi _ {\theta old}(o_{t} | q, o_{<t})}
@@ -32,7 +35,6 @@ $$
 $$
 
 那么<font color='blue'>公式1</font>中就可以重写成：
-<font color='blue'>公式1</font>中的 $\pi \theta$，是可以单独拿出来的，即
 $$
 \begin{equation}
 \mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi _{\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \mathcal{h}(o_{t}) A_{t}, clip( \mathcal{h}(o_{t}), 1 - \epsilon, 1 + \epsilon) A_{t}]  
@@ -46,7 +48,7 @@ $$
 \end{equation}
 $$
 
-这样就可以清晰的看到了，对于 $ \mathcal{h}(o_{t}) $，需要和它的裁剪之后的值，再取最小值，然后乘以 优势 $A_{t}$ ，得到 $t$ 时刻的目标
+这样就可以清晰的看到了，对于 $ \mathcal{h}(o_{t}) $，需要和它的裁剪之后的值，再取最小值，然后乘以优势 $A_{t}$ ，得到 $t$ 时刻的目标
 
 > $\pi_{\theta}$ 和 $\pi_{\theta old}$ 分别是当前的policy model和 old policy model
 
@@ -68,7 +70,79 @@ $$
 
 > 其中 $r_{\psi}$ 是奖励模型， $\pi_{ref}$是参考模型（参考模型一般使用SFT model作为初始化），$\beta$ 是KL 惩罚的系数
 
-<font color='red'> **TODO:  $r_{t}$ 和 $A_{t}$ 是怎么计算的** </font>
+### 如何计算$r_{t}$
+
+$r_{t}$ 是奖励，核心定义为：环境（或认为）对智能体【如：LLM】在时间步 $l$ 采取的动作【如生成某个token、完成部分推理步骤】的反馈信号。用于衡量该动作对于完成任务的 “贡献度” ，是强化学习中引导策略优化的核心指标。
+
+$r_{t}$如何得来？可以通过定义一种规则，即奖励函数获得，如GRPO中。或者使用Reward Model，如在PPO中。
+
+#### Reward Model 是如何训练的
+
+Reward Model的训练是监督学习的过程，核心是利用 “人类标注的偏好数据“ 训练一个回归模型，使其能够对文本序列进行打分，具体步骤如下：
+
+1. 人类偏好数据
+
+数据形式使用三元组 <font style="color: blue">（prompt, choosen_response, rejected_response)</font> 其中choosen_response 和 rejected_response 是LLM对同一个prompt生成的2个不同的回答。需要标注这2个回答哪个更好。
+
+**例如**
+
+- prompt：“如何煮奶茶？”
+- response1：“牛奶煮沸加茶叶，煮 5 分钟即可。”（步骤清晰）
+- response2：“先倒水，再放奶。”（步骤模糊）
+- 人类标注：response1 > response2（response1 更好）。
+
+1. 网络结构
+
+通常使用与LLM相同的架构，使用SFT阶段的权重作为初始化参数，但是输出层是回归一个标量
+
+输入：拼接之后的 `[prompt][response]`
+
+输出：标量奖励
+
+<font style="color: blue">输出的归一化 TODO</font>
+
+2. 损失函数：最大化偏好排序的一致性
+
+训练的目标：r(choose) > r(reject) ，即偏好的响应获得更高的奖励。
+
+使用基于排序的二元交叉熵损失 （Binary Cross Entropy Loss for Ranking), Reward Model的损失函数用于**建模偏好概率**, 核心思想是同一个prompt, choosed_response的奖励应当显著高于rejected_response。最常使用 **Bradley-Terry 模型的变体**，具体形式为：
+
+$$
+L_{RM} = -\log(\sigma(r_{\theta}(s, y^{+}) - r_{\theta}(s, y^{-})))
+$$
+
+其中：
+
+- $r_{\theta}(s, y)$ 表示 参数为 $\theta$ 的Reward Model对状态 $s$ （即prompt）和响应 $y$ （即 response）的奖励值
+
+    - $s$ = prompt
+    - $y^{+}$ = chosen_response
+    - $y^{-}$ = rejected_response
+    - $\sigma$ 是Sigmoid函数，即 $\sigma(x) = \frac{1}{1 + e^{x}}$
+    - $r_{\theta}(s, y^{+}) - r_{\theta}(s, y^{-})$ 是2个响应的奖励差值
+    - 目标概率 $P(y^{+} \succ y^{-}) = \sigma(r_{\theta}(s, y^{+}) - r_{\theta}(s, y^{-}))$ 表示模型预测 $y^{+}$ 优于 $y^{-}$ 的概率
+
+**损失函数的直观解释**
+
+- 当 $r_{\theta}(s, y^{+}) \gg r_{\theta}(s, y^{-})$ 时， $\sigma(差值) \approx 1$, 损失 $L_{RM} \approx 0$  （理想情况）
+- 当 $r_{\theta}(s, y^{+}) < r_{\theta}(s, y^{-})$ 时， $\sigma(差值) \approx 0$, 损失 $L_{RM} \to \infty$  （糟糕情况）
+- 等效形式
+$$
+L_{RM} = \log(1 + exp(-r_{\theta}(s, y^{+}) - r_\theta(s, y^{-})))
+$$
+这是2元交叉熵损失的标准写法，强调排序而非绝对奖励值。
+
+<font style="color: blue">讨论：为什么使用该损失函数？</font>
+
+1. 偏好建模：人类反馈通常是相对偏好（A比B好），而非绝对评分。该损失直接优化排序能力。
+2. 避免奖励黑客（Reward Hacking)：仅优化差值（而非绝对奖励值）可以防止Reward Model输出人任意高的奖励值（比如，对所有的奖励都打高分）
+3. Sigmoid + log 保证损失平滑，适合梯度下降优化。
+4. 与PPO兼容：在PPO阶段，标量奖励 $r_{\theta}(s, y)$ 可以直接用于计算策略梯度。
+
+
+### 如何计算$A_{t}$
+
+
 
 ## GPRO
 由于PPO中使用的价值函数通常与策略模型大小相当，它带来了相当大的内存和计算负担。此外，在强化学习训练过程中，价值函数被视为计算优势的baseline，以减少方差。而在大型语言模型的背景下，通常只有最后一个标记会被奖励模型分配一个奖励分数，这可能会使得在每个标记上都准确的价值函数的训练变得复杂。
