@@ -1,6 +1,6 @@
 ---
 title: RLHF-GRPO
-date: 2025-02-22
+date: 2025-07-19
 tags: RLHF GRPO PPO
 mathjax: true
 ---
