@@ -5,7 +5,7 @@ tags: RLHF GRPO
 mathjax: true
 ---
 
-<img src="RLHF/ppo-and-grpo.png" alt="ppo-and-grpo" />
+<img src="RLHF-GRPO/ppo-and-grpo.png" alt="ppo-and-grpo" />
 
 GRPO是在 [DeepSeekMath](https://arxiv.org/abs/2402.03300) 论文中提出的
 
@@ -16,7 +16,7 @@ GRPO是在 [DeepSeekMath](https://arxiv.org/abs/2402.03300) 论文中提出的
 
 $$
 \begin{equation}
-\mathcal{J}_{GRPO}(\theta) = \mathbb{E}[q \sim P(Q), \{o_{i=1}^{G}\} \sim \pi_{\theta old}(o|q)] \frac{1}{G} \sum_{i=1}^{G} \frac{1}{|o_{i}|} \sum_{t=1}^{|o_{i}|} \{ min [ \frac{\pi _{\theta}(o_{i,t}|q, o_{i<t})}{\pi _{\theta old}(o_{i,t}|q, o_{i<t})} \hat{A}_{i,t}, clip( \frac{\pi _{\theta}(o_{i,t}|q, o_{i<t})}{\pi _{\theta old}(o_{i,t}|q, o_{i<t})}, 1-\epsilon, 1+\epsilon) \hat{A}_{i,t} ] - \beta \mathbb{D}_{KL}[\pi_{\theta} || \pi_{ref}] \} 
+\mathcal{J}_{GRPO}(\theta) = \mathbb{E}[q \sim P(Q), \{o_{i=1}^{G}\} \sim \pi_{\theta old}(o|q)] \frac{1}{G} \sum_{i=1}^{G} \frac{1}{|o_{i}|} \sum_{t=1}^{|o_{i}|} \{ min [ \frac{\pi _{\theta}(o_{i,t}|q, o_{i<t})}{\pi _{\theta old}(o_{i,t}|q, o_{i<t})} \hat{A}_{i,t}, clip( \frac{\pi _{\theta}(o_{i,t}|q, o_{i<t})}{\pi _{\theta old}(o_{i,t}|q, o_{i<t})}, 1-\epsilon, 1+\epsilon) \hat{A}_{i,t} ] - \beta \mathbb{D}_{KL}[\pi_{\theta} || \pi_{ref}] \}
 \end{equation}
 $$
 
@@ -38,7 +38,7 @@ $$
 $$
 
 ## 算法流程图
-<img src="RLHF/grpo-alg.png" alt="gpro-alg" />
+<img src="RLHF-GRPO/grpo-alg.png" alt="gpro-alg" />
 
 随着强化学习训练过程的推进，旧的reward model可能不足以监督当前的policy model, 因此本文探索了使用GRPO的迭代地强化学习。如算法1所示，在迭代GRPO中，我们基于policy model的采样结果生成新的reward model训练集，并且持续训练旧的reward model使用混合了10%历史数据的重放机制。然后我们将ref model设置为policy model, 继续使用new reward model 训练policy model。
 
@@ -56,9 +56,7 @@ $$ \hat{A}_{i,t} = \tilde{r}_{i} = \frac{r_i - mean(\mathbf{r})}{std(\mathbf{r})
 $$ \mathbf{R} = \Big\{ \Big\{ r_{1}^{\text{index}(1)}, \ldots, r_{1}^{\text{index}(K_{1})} \Big\}, \ldots, \Big\{ r_{G}^{\text{index}(1)}, \ldots, r_{G}^{\text{index}(K_{G})} \Big\} \Big\} $$
 {% endraw %}
 
-其中，$index(j)$ 是 $j$-th step的end token的index, $K_i$ 是 $i$-th输出的 steps的总数。这些奖励也使用均值和方差进行归一化，即 
-$$ \tilde{r}_{i}^{index(j)} = \frac{r_{i}^{index(j)} - mean(\mathbf{R})}{std(\mathbf{R})}$$ 
+其中，$index(j)$ 是 $j$-th step的end token的index, $K_i$ 是 $i$-th输出的 steps的总数。这些奖励也使用均值和方差进行归一化，即
+$$ \tilde{r}_{i}^{index(j)} = \frac{r_{i}^{index(j)} - mean(\mathbf{R})}{std(\mathbf{R})}$$
 接下来过程监督计算每个token的优势为归一化的奖励的总和，即 $\hat{A}_{i,t} = \sum_{index(j) \geq t} \tilde{r}_{i}^{index(j)}$。然后通过最大化<font style="color: blue">公式3</font>中的策略。
-
-
 

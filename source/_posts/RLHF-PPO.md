@@ -5,7 +5,7 @@ tags: RLHF PPO
 mathjax: true
 ---
 
-<img src="RLHF/ppo-and-grpo.png" alt="ppo and grpo"/>
+<img src="RLHF-PPO/ppo-and-grpo.png" alt="ppo and grpo"/>
 
 ---
 **Ref:**
@@ -25,7 +25,7 @@ PPO是actor-critic的RL算法，在LLM中，常常优化以下的代理目标：
 
 $$
 \begin{equation}
-\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi_{\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \frac{\pi_{\theta} (o_{t} | q, o_{<t})}{\pi _{\theta old}(o_{t} | q, o_{<t})} A_{t}, clip( \frac{\pi _{\theta} (o_{t} | q, o_{<t})}{\pi _ {\theta old}(o_{t} | q, o_{<t})}, 1 - \epsilon, 1 + \epsilon) A_{t}]  
+\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi_{\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \frac{\pi_{\theta} (o_{t} | q, o_{<t})}{\pi _{\theta old}(o_{t} | q, o_{<t})} A_{t}, clip( \frac{\pi _{\theta} (o_{t} | q, o_{<t})}{\pi _ {\theta old}(o_{t} | q, o_{<t})}, 1 - \epsilon, 1 + \epsilon) A_{t}]
 \end{equation}
 $$
 
@@ -40,14 +40,14 @@ $$
 那么<font color='blue'>公式1</font>中就可以重写成：
 $$
 \begin{equation}
-\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi _{\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \mathcal{h}(o_{t}) A_{t}, clip( \mathcal{h}(o_{t}), 1 - \epsilon, 1 + \epsilon) A_{t}]  
+\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi _{\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \mathcal{h}(o_{t}) A_{t}, clip( \mathcal{h}(o_{t}), 1 - \epsilon, 1 + \epsilon) A_{t}]
 \end{equation}
 $$
 
 进一步可以写成:
 $$
 \begin{equation}
-\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi _ {\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \mathcal{h}(o_{t}) , clip( \mathcal{h}(o_{t}), 1 - \epsilon, 1 + \epsilon)] A_{t}  
+\mathcal{J}_{PPO}(\theta) = \mathbb{E}[q \sim P(Q), o \sim \pi _ {\theta old}(o|q)] \frac{1}{|o|} \sum_{t=1}^{|o|} min [ \mathcal{h}(o_{t}) , clip( \mathcal{h}(o_{t}), 1 - \epsilon, 1 + \epsilon)] A_{t}
 \end{equation}
 $$
 
@@ -153,7 +153,7 @@ $$
 在RLHF中，Value Model负责估计状态价值函数，为策略优化提供关键信号。与Reward Model不同，Value Model在PPO训练中持续更新，直接影响策略学习的稳定性和效率。
 
 <font style="color: blue">**区别**</font>
- 
+
  - Reward Model： 提供 **即时奖励 $r_{t}$** ，标量，在PPO中**冻结参数**
  - Value Model：  预测**未来累积奖励 $V(s_{t})$** ，在PPO中**持续更新**
 
@@ -188,7 +188,7 @@ GAE（Generalized Advantage estimator， 广义优势估计）是用于**估计*
  A_{t}^{MC} = \sum_{k=t}^{T} \gamma^{k-t}r_{k} - V(s_t)
 $$
 
-    
+
     优点：无偏估计
     缺点：
         高方差：需要完整轨迹
@@ -207,11 +207,11 @@ $$
 
 <font style="color: blue">适用于 长序列、高噪声环境</font>
 
-**✅ GAE的使命**：在偏差和方差间找到最优平衡点，特别适合长序列生成任务（如语言模型）。 
+**✅ GAE的使命**：在偏差和方差间找到最优平衡点，特别适合长序列生成任务（如语言模型）。
 
 **GAE数学原理**
 
-GAE基于<font style="color: blue">TD(λ)</font>框架，其核心是<font style="color: blue">λ-回报（λ-return</font> 
+GAE基于<font style="color: blue">TD(λ)</font>框架，其核心是<font style="color: blue">λ-回报（λ-return</font>
 
 $$
 R_{\lambda}^{t} = (1 - \lambda) \sum_{n=1}^{\infty} \lambda^{n-1}R_{t}^{(n)}
