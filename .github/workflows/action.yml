@@ -1,0 +1,80 @@
+name: Deploy Hexo to Github Pages
+
+# 触发条件，当有代码推送到指定分支时，触发流程
+on:
+  push:
+    branches:
+      - master
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 子任务
+  build:
+    # 指定运行所需要的虚拟机环境
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout 当前仓库到容器。
+      - name: Checkout
+        uses:
+          actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 设置node环境
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.18.3"
+
+      # 缓存依赖项
+      - name: Cache NPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-npm-cache
+          restore-keys: |
+            ${{ runner.OS }}-npm-cache
+
+      # 安装依赖
+      - name: Install Dependencies
+        run: |
+          # Install pandoc
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          npm install
+
+      - name: Build
+        run: |
+          npm run clean # 实际为hexo clean
+          npm run build # 实际为hexo generate
+
+      - name: Upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+          
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
