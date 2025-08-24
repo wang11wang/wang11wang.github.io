@@ -411,10 +411,15 @@ Blog: [InternVL2.5: Expanding Performance Boundaries of Open-Source Multimodal M
 每个模型都分为3个阶段的训练，3个阶段都是使用的**NTP Loss**
 
 ### stage-1: MLP WarmUp
+
 只更新MLP的参数
+
 ### Stage-2: ViT Incremental Learning (Optional)
+
 更新ViT + MLP的参数
+
 ### Stage-3: Full Model Instruct Learning
+
 更新整个模型（ViT + MLP + LLM）的参数
 
 ### 渐近缩放策略（Progressive Scaling Strategy）
