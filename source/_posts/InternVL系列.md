@@ -14,7 +14,7 @@ InternVL系列教程：<https://internvl.readthedocs.io/en/latest/index.html>
 Paper: [InternVL: Scaling up Vision Foundation Models and Aligning for Generic Visual-Linguistic Tasks](https://arxiv.org/pdf/2312.14238)
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.0/classification.html>
-<img src="InternVL系列/internvl-arch.png" alt="internvl-arch" />
+<img src="InternVL系列/internvl-1.0-arch.png" alt="internvl-1.0-arch" />
 
 
 
@@ -32,9 +32,10 @@ LLM: 多语言的LLaMA-7B（直接使用训练好的权重）
 Visual Encoder和LLM的权重都更新
 
 ### Stage-2: Vision-Language Generative Training
-QLLaMA：使用Stage-1中的LLaMA-7B的权重
 
-冻结Visual Encoder和LLM的权重，只更新**新增加的权重：learnable queries and cross attention layers**
+#### QLLaMA 语言中间件
+
+结构和BLIP2中的QFormer相同，但是使用了强大的LLM而不是较小的Transformer，这里直接使用Stage-1中的LLaMA-7B的权重作为初始化，同时又添加了 <font style="color: blue">96 learnable queries and cross attention layers</font>，这些新的参数大约有1B，训练时Freeze LLM，只对新增加的参数进行训练。
 
 数据：将上述4.98B数据进一步清洗，得到1.03B数据
 
@@ -49,11 +50,43 @@ QLLaMA：使用Stage-1中的LLaMA-7B的权重
     2. 将LLM通过MLP连接到QLLaMA上，QLLaMA的权重不需要更新
 训练：可以只更新MLP的权重，也可以更新MLP + LLM的权重
 
+## 使用方式
+<img src="InternVL系列/internvl-1.0-usage.png" alt="internvl-1.0-usage" />
+
+InternVL 可以应用在多个领域，是一把瑞士军刀
+
+- 视觉感知任务
+
+    只使用 Vision Encoder：InternViT-6B，将 $I\in R^{H\times W \times 3}$ 编码为 $F \in R^{H/14\times W/14 \times D}$，可以将$F$直接应用于密集预测任务，也可以结合GAP + 线性投影 用于图像分类
+
+- 对比任务
+
+    - InternVL-C
+        
+        如图（a）所示的，对于图像，对Vision Encoder的输出应用attention pooling获得视觉特征；对于文本，取`[EOS]`处的文本特征，然后计算相似度;
+
+    - InternVL-G
+        
+        如图（b）所示的，对于图像：不仅可以对Vision Encoder的输出，而且也可以对QLLaMA的learned queries 应用 attention pooling获得视觉特征；对于文本，取`[EOS]`处的文本特征，然后计算相似度
+
+- 生成任务
+    
+    直接使用 InternViT + QLLaMA，就可以做文本生成。QLLaMA 的 quries 对来自 InternViT-6B 的视觉表征进行重组，并将其作为 QLLaMA 的前缀文本，然后就可以生成文本了。不用像BLIP2那样再外接一个LLM，因为QLLaMA有8B的参数，有强大的语言生成能力
+
+- 多模态对话
+    
+    - without QLLaMA
+
+        InternViT + MLP + LLM， 先训练MLP 1个epoch，再训练LLM 1个epoch；推理的时结构如图（c）所示。
+    
+    - with QLLaMA
+        InternViT + QLLaMA + MLP + LLM，先训练MLP 1个 epoch，再训练LLM 1个epoch，推理时架构如图（d）所示。
+
 # InternVL-1.1
 发表于2024.01.24 Blog: [InternVL 1.1: Enhance Chinese and OCR Capabilities](https://internvl.github.io/blog/2024-01-24-InternVL-1.1)
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.1/introduction.html>
-<img src="InternVL系列/internvl-1-1-arch.png" alt="internvl-1-1-arch" />
+<img src="InternVL系列/internvl-1.1-arch.png" alt="internvl-1.1-arch" />
 
 发布了InternVL-Chat-V1-1 和 InternViT-6B-448px-V1-0 2个模型
 
@@ -78,7 +111,7 @@ Blog: [InternVL 1.2: Scaling up LLM to 34B](https://internvl.github.io/blog/2024
 
 Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.2/introduction.html>
 
-<img src="InternVL系列/internVL-1-2-arch.png" alt="internVL-1-2-arch" />
+<img src="InternVL系列/internVL-1.2-arch.png" alt="internVL-1.2-arch" />
 
 ## 训练
 
