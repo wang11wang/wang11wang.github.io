@@ -352,6 +352,8 @@ $$
 
 动态分辨率和InternVL-1.5相同，即图像分块+缩略图
 
+base model是InternLM2-1.8B，visual experts从InternLM2-1.8B的MLP初始化而来，共有1.2B参数
+
 训练分为2大阶段，即EViP和Instruct Tuning
 
 ### EViP
@@ -407,6 +409,7 @@ Blog: [InternVL2.5: Expanding Performance Boundaries of Open-Source Multimodal M
 ## 训练方法
 <img src="InternVL系列/internvl-2.5-train.png" alt="internvl-2.5-train" />
 每个模型都分为3个阶段的训练，3个阶段都是使用的**NTP Loss**
+
 ### stage-1: MLP WarmUp
 只更新MLP的参数
 ### Stage-2: ViT Incremental Learning (Optional)
@@ -430,7 +433,7 @@ Blog: [InternVL2.5: Expanding Performance Boundaries of Open-Source Multimodal M
 常用的NTP LOSS重采样有**Token平均**和**样本平均**
 <img src="InternVL系列/internvl-2.5-loss-reweighting.png" alt="internvl-2.5-loss-reweighting" />
 
-token平均： $\frac{1}{x^0}$恒等于1，即$w_i$恒等于1，那么每个token对NTP Loss的贡献都是一样的，会导致梯度偏差到更长的token生成上
+token平均： $\frac{1}{x^0}$ 恒等于1，即 $w_i$ 恒等于1，那么每个token对NTP Loss的贡献都是一样的，会导致梯度偏差到更长的token生成上
 
 样本平均：$\frac{1}{x^1}$，会确保每个样本对与NTP Loss的贡献是一样的，但是会导致模型更偏爱产生更短的response
 
@@ -463,11 +466,46 @@ Blog: [InternVL2.5-MPO: Enhancing the Reasoning Ability of Multimodal Large Lang
 MMPR即Multi-Modal Preference Dataset，本文提出了一个高效的便好数据构建pipeline，基于该pipeline构建了一个高质量、大规模的、3M的多模态推理便好数据集.
 
 - 对于有明确标准答案的样本：模型首先被prompt输出推理过程和生成格式为"Final Answer: xx"的最终答案；和gt match的response被认为是positive set $\mathcal{Y}_p$ , 不匹配的被认为是negative set $\mathcal{Y}_n$ ,此外那些not clear response也被合并进 $\mathcal{Y}_n$ . 假设response label被认为是positve和negative，那么可以通过从$\mathcal{Y}_p$和$\mathcal{Y}_n$各选择1个response作为preference pair.
-- 对于没有明确标准答案的样本：提出一个简单高效的方法：Dropout NTP(Dropout Next Token Prediction), 具体的讲：使用InternVL2-8B生成的response作为chosen answer。对于该chosen answer, 在一半的地方截断它，然后promptInternVL2-8B对截断的答案补全（不使用图像输入），生成的answer就作为paired sample中的reject answer。值得指出的是：InternVL2-8B生成的答案可能是不完美的，而且InternVL2-8B在不使用图像输入的时候补全的答案会包含更多的幻觉，因此才能购在choosen answer和reject answer之间的偏序关系保持为true。
+
+- 对于没有明确标准答案的样本：提出一个简单高效的方法：Dropout NTP(Dropout Next Token Prediction), 具体的讲：使用InternVL2-8B生成的response作为chosen answer。对于该chosen answer, 在一半的地方截断它，然后prompt InternVL2-8B对截断的答案补全（不使用图像输入），生成的answer就作为paired sample中的reject answer。值得指出的是：InternVL2-8B生成的答案可能是不完美的，而且InternVL2-8B在不使用图像输入的时候补全的答案会包含更多的幻觉，因此才能购在choosen answer和reject answer之间的偏序关系保持为true。
 
 ## MPO
-MPO: Mixed Preference Optimization
+MPO: Mixed Preference Optimization，不仅用于InternVL-2.5，也用于InternVL-3的Post-training
 
-MPO的关键在于：一个有效的 PO 流程应当使模型能够学习成对响应之间的相对偏好、单个响应的绝对质量以及生成更优响应的过程。
+MPO的关键在于：一个有效的 PO 流程应当使模型能够学习成对响应之间的相对偏好、单个响应的绝对质量以及生成更优响应的过程。因此训练目标由以下三部分组成
 
-[//]: todo,补充损失的形式
+$$
+\mathcal{L} = w_p \cdot \mathcal{L_p} + w_q \cdot \mathcal{L_q} + w_g \cdot \mathcal{L_g}
+$$
+
+其中 $w_*$ 表示各项的权重，$\mathcal{L_p}$，$\mathcal{L_q}$ 和 $\mathcal{L_g}$ 分别表示 偏好损失，质量损失和生成损失。 该文章比较了多个不同的偏好损失之后，根据经验选择了 DPO 作为偏好损失，BCO 作为质量损失。
+
+DPO的形式如下：$\beta$ 是 KL惩罚的系数，$x$， $y_c$ 和 $y_r$ 分别是 输入，choosen answer 和 rejected answer，模型 $\pi_{\theta}$ 从 $\pi_{0}$ 初始化。
+$$
+\mathcal{L_p} = -\log \sigma (\beta \log \frac{\pi_{\theta}(y_c | x)}{\pi_{0}(y_c | x)} - \beta \log \frac{\pi_{\theta}(y_r | x)}{\pi_{0}(y_r | x)})
+$$
+
+质量损失使用BCO，用于促进模型理解单独回答的绝对质量，形式如下: $L_{q}^{+}$ 和 $L_q^{-}$ 分别是choosen resp 和 rejected resp 的 loss，$\delta$ 是 reward shift，用于稳定训练，是历史reward 的移动平均值。
+$$
+\mathcal{L_q} = \mathcal{L_{q}^{+}} + \mathcal{L_{q}^{-}}
+$$
+
+$$
+\mathcal{L_{q}^{+}} = - \log \sigma (\beta \log \frac{\pi_{\theta}(y_c | x)}{\pi_{0}(y_c | x)} - \delta)
+$$
+
+$$
+\mathcal{L_{q}^{-}} = - \log \sigma (-(\beta \log \frac{\pi_{\theta}(y_r | x)}{\pi_{0}(y_r | x)} - \delta))
+$$
+
+$\mathcal{L_g}$ 是SFT的损失，只应用在 preferred resp上，用于帮助模型学习preferred resp的生成过程。形式如下：
+
+$$
+\mathcal{L_g} = - \frac{\log \pi_{theta}(y_c | x)}{|y_c|}
+$$
+
+# VisualPRM
+
+# InternVL-3
+
+# VeBrain
