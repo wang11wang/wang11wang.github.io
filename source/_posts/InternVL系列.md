@@ -80,6 +80,7 @@ InternVL 可以应用在多个领域，是一把瑞士军刀
         InternViT + MLP + LLM， 先训练MLP 1个epoch，再训练LLM 1个epoch；推理的时结构如图（c）所示。
     
     - with QLLaMA
+
         InternViT + QLLaMA + MLP + LLM，先训练MLP 1个 epoch，再训练LLM 1个epoch，推理时架构如图（d）所示。
 
 # InternVL-1.1
@@ -90,7 +91,7 @@ Tutorial: <https://internvl.readthedocs.io/en/latest/internvl1.1/introduction.ht
 
 发布了InternVL-Chat-V1-1 和 InternViT-6B-448px-V1-0 2个模型
 
-模型架构类似LLaVA，使用MLP连接InternViT-6B和LLaMA2-13B，形成1个19B的模型
+模型架构类似LLaVA，使用MLP <font style="color: blue">【不再使用QLLaMA这种复杂的结构】</font>连接InternViT-6B和LLaMA2-13B，形成1个19B的模型
 
 分辨率变化：图像输入变成448 x 448，会生成1024个token，使用Pixel Shuffle降低到256个token；
 
@@ -298,6 +299,19 @@ Progressive with larger language models？
 # InternOmini
 发表于2024.07.27的Blog: [InternOmni: Extending InternVL with Audio Modality](https://internvl.github.io/blog/2024-07-27-InternOmni/)，增加了对Audio的处理
 
+<img src="InternVL系列/internvl-omni-arch.png" alt="internvl-omni-arch" />
+
+模型支持text + image，audio + image的输入
+
+Audio Encoder 使用OpenAI开源的 Whisper-large-v3，通过 MLP将其连接到LLM上。
+
+## 训练：
+
+- 第一阶段：使用26M audio-text -> text 的数据，只训练 Audio MLP
+
+- 第二阶段：使用1.9M audio-image -> text 的数据，只训练 Audio MLP；audio-image -> text的数据是对开源的 image-text数据中的text替换为audio得到的。
+
+
 # Mono-InternVL
 发表于2024.10.10 
 
@@ -305,7 +319,55 @@ Paper: [Mono-InternVL: Pushing the Boundaries of Monolithic Multimodal Large Lan
 
 Blog: [Mono-InternVL: Pushing the Boundaries of Monolithic Multimodal Large Language Models with Endogenous Visual Pre-training](https://internvl.github.io/blog/2024-10-10-Mono-InternVL/)
 
-TODO，详细内容以后再说
+<img src="InternVL系列/mono-internvl-comp.png" alt="mono-internvl-comp" />
+
+常见的MLLM架构，如当前最常见的LLaVA这种通过Connector将Vision Encoder嫁接到LLM上，或者如Chameleon那种直接将图像和文本都输入到LLM中。本文提出在LLM内部集成Visual Experts。
+
+<img src="InternVL系列/mono-internvl-arch.png" alt="mono-internvl-arch" />
+
+## 模型结构
+
+整体采用多模态MoE的架构
+
+### Visual Tokenizer
+directly patchifies images to input visual sequences using a lightweight module。假设图像 $I \in R^{H \times W\times 3}$，那么首先使用 visual embedding $x_v \in  R^{(h \times w)\times d}$ 通过下面的方式获得：
+
+$$
+x_v = MLP(PatchEmbed(I) + PE)
+$$
+
+其中，$PatchEmbed(·)$ 表示一个 stride 等于 28 的patch embedding layer，意味着每个visual token表示一个 $28\times 28$的image patch；$PE \in R^{(h \times w)\times d}$ 是和InternVL-1.5相似的可学习的位置编码；除此之外，会增加一个 <font style="color: blue">缩略图</font> 来提供全局视觉信息。然后通过 MLP 将特征转换到和LLM相同的纬度。
+
+### Textual Tokenizer
+
+文本 tokenizer 直接使用LLM中的文本tokenizer
+
+### 多模态MoE架构
+
+图文输入经过Visual Tokenizer和Textual Tokenizer之后，得到visual embedding和textual embedding, 将他们`concat`起来。在每一层Transformer中，首先经过 RMSNorm，然后MHA，然后残差相连；这部分和常规的MLLM处理一致。不同的地方在于：使用静态路由MoE，即visual token进入V-Expert，text token进入T-Expert。MoE 模块由FFN实现，$FFN_v$ 由 $FFN_t$初始化而来。
+
+## 训练
+
+<img src="InternVL系列/mono-internvl-train.png" alt="mono-internvl-train" />
+
+动态分辨率和InternVL-1.5相同，即图像分块+缩略图
+
+训练分为2大阶段，即EViP和Instruct Tuning
+
+### EViP
+
+Endogenous Visual Pre-training的目的是通过在海量噪声和合成数据上与训练最大化Mono-InternVL从visual experts的收益。分为3个阶段进行：
+
+- S1.1 概念学习，从噪声数据中学习基础的视觉概念
+
+- S1.2 语义学习，从合成数据中学习语义信息
+
+- S1.3 对齐学习，对齐图文
+
+### Instruct Tuning
+
+更新MHA，T-Experts，和V-Experts
+
 
 # Mini-InternVL-2.0
 发表于2024.10.21
