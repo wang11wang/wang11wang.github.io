@@ -1,4 +1,4 @@
-  {##################}
+{##################}
   {### POST BLOCK ###}
   {##################}
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="{{ post.lang or config.language }}">
@@ -41,6 +41,10 @@
         </{%- if is_index %}h2{% else %}h1{%- endif %}>
 
         <div class="post-meta">
+          {# Add copyright notice at the very top of post-meta #}
+          {%- if not is_index and theme.creative_commons.license and theme.creative_commons.post %}
+            {{ partial('_partials/post/post-copyright.swig') }}
+          {%- endif %}
 
           {%- set date_diff = date(post.date) != date(post.updated) %}
           {%- set time_diff = time(post.date) != time(post.updated) %}
@@ -166,7 +170,7 @@
     {### POST BODY ###}
     {#################}
     <div class="post-body{%- if post.direction and post.direction.toLowerCase() === 'rtl' %} rtl{%- endif %}" itemprop="articleBody">
-
+    
       {# Gallery support #}
       {%- if post.photos and post.photos.length %}
         <div class="post-gallery" itemscope itemtype="http://schema.org/ImageGallery">
