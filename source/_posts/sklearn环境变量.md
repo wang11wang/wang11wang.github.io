@@ -4,12 +4,13 @@ date: 2024-12-21
 ---
 当使用scikit-learn中的算法的时候，会涉及到并行计算，以加快计算速度；
 scikit-learn的并行有几种实现
+
 - 高层次的并行: [joblib](https://joblib.readthedocs.io/en/latest/)
-- 调用C或者Cython实现的并行，使用OpenMP
-- 调用Numpy或者SciPy的array操作，使用BLAS
+- 调用 `C` 或者 `Cython` 实现的并行，使用 `OpenMP`
+- 调用 `Numpy` 或者 `SciPy` 的 `array` 操作，使用 `BLAS`
 
 ## joblib
-scikit-learn中如果使用joblib进行多线程或者多进程加速，默认使用多进程，在某些情况下使用多线程进行加速； 那么一般会有n_jobs的参数，默认是None 使用1个进程进行计算，设置n_jobs=-1会使用全部的进程进行计算；
+scikit-learn 中如果使用joblib进行多线程或者多进程加速，默认使用多进程，在某些情况下使用多线程进行加速； 那么一般会有 `n_jobs` 参数，默认值 `None` 即使用 `1` 个进程进行计算，设置n_jobs=-1会使用全部的进程进行计算；
 
 如果要手动指定使用多线程计算
 ``` python
@@ -20,7 +21,7 @@ with parallel_backend('threading', n_jobs=2):
 ```
 
 ## OpenMP
-OpenMP会默认使用尽可能多的线程进行计算，通常和CPU的逻辑核数相等的核数进行计算，可以通过<font color="red">OMP_NUM_THREADS</font>环境变量进行控制,如
+`OpenMP` 会默认使用尽可能多的线程进行计算，通常和CPU的逻辑核数相等的核数进行计算，可以通过 <font color="red">OMP_NUM_THREADS</font> 环境变量进行控制,如
 ``` bash
 $ OMP_NUM_THREADS=4 python my_script.py
 ```
@@ -32,6 +33,7 @@ python my_script.py
 
 ## 来自numpy,scipy的并行
 scikit-learn依赖了很多numpy和scipy的计算，numpy和scipy内部使用线性代数库(BLAS & LAPACK)进行并行计算，比如： MKL, OpenBLAS or BLIS
+
 - MKL_NUM_THREADS 设置MKL的线程个数
 - OPENBLAS_NUM_THREADS 设置OpenBLAS的线程个数
 - BLIS_NUM_THREADS 设置BLIS的线程个数
